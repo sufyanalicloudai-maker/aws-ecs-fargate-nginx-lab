@@ -89,14 +89,14 @@ In **VPC → Security Groups**, I created `sufyan-nginx-web-sg` in the default V
 |---|---|---|---|
 | HTTP | TCP | 80 | `<my-public-ip>/32` |
 
-![Security group with HTTP inbound rule](images/image1.png)
+![Security group with HTTP inbound rule](Images/image1.png)
 
 **Why:** A security group is a stateful firewall. Port 80 lets the browser reach Nginx over HTTP, and `/32` limits access to exactly one IPv4 address.
 
 ### Step 4: Create the ECS cluster
 In **Amazon ECS → Clusters**, I created `sufyan-ecs-lab` using the default Fargate infrastructure.
 
-![ECS cluster created](images/image2.png)
+![ECS cluster created](Images/image2.png)
 
 **Why:** A cluster is the logical grouping where ECS organizes services and running tasks. With Fargate there are no EC2 instances to provision or patch.
 
@@ -126,7 +126,7 @@ In the container's log collection settings (destination **Amazon CloudWatch**, w
 | `awslogs-stream-prefix` | `ecs` |
 | `awslogs-create-group` | `true` |
 
-![Task definition created successfully](images/image3.png)
+![Task definition created successfully](Images/image3.png)
 
 **Why:** The Nginx image writes access logs to stdout and error logs to stderr. The `awslogs` driver forwards those streams to CloudWatch, so I can inspect web requests without logging into a server.
 
@@ -143,7 +143,7 @@ Inside the cluster, I created `sufyan-nginx-service` with:
 | Security group | `sufyan-nginx-web-sg` (default group removed) |
 | Load balancer | None |
 
-![ECS service deployed successfully](images/image4.png)
+![ECS service deployed successfully](Images/image4.png)
 
 **Why:** A service keeps the desired number of tasks running and replaces them if they fail. A public subnet plus a public IP allows direct browser access in this lab.
 
@@ -154,14 +154,14 @@ Inside the cluster, I created `sufyan-nginx-service` with:
 ### Step 8: Open the Nginx website
 I copied the task's public IP and opened `http://<public-ip>/` in the browser. The Nginx welcome page loaded.
 
-![Nginx welcome page](images/image5.png)
+![Nginx welcome page](Images/image5.png)
 
 **How it works:** The browser sends an HTTP request to the task's public IP on port 80. The security group allows it because my IP matches the `/32` rule, Nginx receives the request, and it returns the welcome-page HTML.
 
 ### Step 9: View the logs in CloudWatch
 I refreshed the page several times, then opened **CloudWatch → Log Management → Log groups → `/ecs/sufyan-nginx`** and the newest log stream. Each refresh appears as an access-log entry (`GET / HTTP/1.1`).
 
-![CloudWatch log events showing GET requests](images/image6.png)
+![CloudWatch log events showing GET requests](Images/image6.png)
 
 **Why:** Every refresh creates an HTTP request. Nginx writes an access-log line, and the `awslogs` driver ships it to CloudWatch Logs.
 
@@ -169,7 +169,7 @@ I refreshed the page several times, then opened **CloudWatch → Log Management 
 In **CloudTrail → Event history** (us-east-1), I searched for the events `CreateCluster`, `RegisterTaskDefinition`, and `CreateService`, and opened them to see which identity made each call, when, and from where.
 
 <!-- Add your CloudTrail screenshot below, or delete this section if you do not include one -->
-![CloudTrail event history](images/image7.png)
+![CloudTrail event history](Images/image7.png)
 
 **Why:** CloudTrail records AWS API activity, which gives an audit trail of who created or changed which resource.
 
